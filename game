@@ -1,0 +1,123 @@
+import pygame
+import sys
+
+# Initialize Pygame
+pygame.init()
+
+# Screen dimensions
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption('Schizophrenia Learning Trail')
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Fonts
+font = pygame.font.Font(None, 36)
+
+# Game states
+START, STATION1, STATION2, STATION3, END = 'START', 'STATION1', 'STATION2', 'STATION3', 'END'
+game_state = START
+
+# Character selection
+character = None
+
+# Questions and answers
+questions = [
+    {
+        "question": "What is a common symptom of schizophrenia?",
+        "options": ["High blood pressure", "Hallucinations", "Fever"],
+        "answer": 1
+    },
+    {
+        "question": "Which of the following is a believed factor in the development of schizophrenia?",
+        "options": ["Lack of exercise", "Genetic factors", "High sugar intake"],
+        "answer": 1
+    },
+    {
+        "question": "What is a common treatment for schizophrenia?",
+        "options": ["Antipsychotic medications", "Antibiotics", "Surgery"],
+        "answer": 0
+    }
+]
+
+# Current question index
+current_question = 0
+
+def draw_start_screen():
+    screen.fill(WHITE)
+    title = font.render("Schizophrenia Learning Trail", True, BLACK)
+    boy_button = font.render("Boy", True, BLACK)
+    girl_button = font.render("Girl", True, BLACK)
+    start_button = font.render("Start", True, BLACK)
+    
+    screen.blit(title, (250, 100))
+    screen.blit(boy_button, (300, 300))
+    screen.blit(girl_button, (400, 300))
+    screen.blit(start_button, (350, 400))
+    pygame.display.flip()
+
+def draw_station_screen(info, question):
+    screen.fill(WHITE)
+    info_text = font.render(info, True, BLACK)
+    question_text = font.render(question["question"], True, BLACK)
+    options = [font.render(option, True, BLACK) for option in question["options"]]
+    
+    screen.blit(info_text, (50, 100))
+    screen.blit(question_text, (50, 200))
+    for i, option in enumerate(options):
+        screen.blit(option, (50, 300 + i * 50))
+    pygame.display.flip()
+
+# Main game loop
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if game_state == START:
+                mouse_x, mouse_y = event.pos
+                if 300 <= mouse_x <= 400 and 300 <= mouse_y <= 340:
+                    character = "Boy"
+                elif 400 <= mouse_x <= 500 and 300 <= mouse_y <= 340:
+                    character = "Girl"
+                elif 350 <= mouse_x <= 450 and 400 <= mouse_y <= 440 and character:
+                    game_state = STATION1
+            elif game_state in [STATION1, STATION2, STATION3]:
+                mouse_x, mouse_y = event.pos
+                if 50 <= mouse_x <= 750 and 300 <= mouse_y <= 350:
+                    selected_option = 0
+                elif 50 <= mouse_x <= 750 and 350 <= mouse_y <= 400:
+                    selected_option = 1
+                elif 50 <= mouse_x <= 750 and 400 <= mouse_y <= 450:
+                    selected_option = 2
+                else:
+                    selected_option = None
+
+                if selected_option is not None:
+                    if selected_option == questions[current_question]["answer"]:
+                        current_question += 1
+                        if current_question == 3:
+                            game_state = END
+                        else:
+                            game_state = f'STATION{current_question + 1}'
+    
+    if game_state == START:
+        draw_start_screen()
+    elif game_state == STATION1:
+        draw_station_screen("Schizophrenia is a chronic and severe mental disorder that affects how a person thinks, feels, and behaves. It can cause symptoms like hallucinations, delusions, and disorganized thinking.", questions[0])
+    elif game_state == STATION2:
+        draw_station_screen("The exact cause of schizophrenia is unknown, but it is believed to be a combination of genetic, brain chemistry, and environmental factors.", questions[1])
+    elif game_state == STATION3:
+        draw_station_screen("Schizophrenia is typically treated with a combination of antipsychotic medications and therapy. Support from family and friends is also important.", questions[2])
+    elif game_state == END:
+        screen.fill(WHITE)
+        end_text = font.render("Congratulations! You've completed the Schizophrenia Learning Trail.", True, BLACK)
+        screen.blit(end_text, (100, 300))
+        pygame.display.flip()
+
+pygame.quit()
+sys.exit()
